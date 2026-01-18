@@ -3,11 +3,15 @@ import { Plus, Search, User, Mail, Phone, Home, MoreVertical } from 'lucide-reac
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { tenants, properties } from '@/data/mockData';
+import { tenants as initialTenants, properties } from '@/data/mockData';
 import { cn } from '@/lib/utils';
+import { TenantForm } from '@/components/forms/TenantForm';
+import { toast } from 'sonner';
 
 export default function Tenants() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [tenants, setTenants] = useState(initialTenants);
 
   const filteredTenants = tenants.filter(
     (tenant) =>
@@ -26,6 +30,23 @@ export default function Tenants() {
     }
   };
 
+  const handleAddTenant = (data: {
+    name: string;
+    email: string;
+    phone: string;
+    propertyId?: string;
+    moveInDate: string;
+    leaseEnd: string;
+    rentStatus: 'paid' | 'pending' | 'overdue';
+  }) => {
+    const newTenant = {
+      id: String(tenants.length + 1),
+      ...data,
+    };
+    setTenants([...tenants, newTenant]);
+    toast.success('Tenant added successfully!');
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -37,7 +58,7 @@ export default function Tenants() {
               Manage your {tenants.length} tenants
             </p>
           </div>
-          <Button className="gradient-primary shadow-glow">
+          <Button className="gradient-primary shadow-glow" onClick={() => setIsFormOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Tenant
           </Button>
@@ -157,6 +178,12 @@ export default function Tenants() {
           </div>
         </div>
       </div>
+
+      <TenantForm
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        onSubmit={handleAddTenant}
+      />
     </MainLayout>
   );
 }
