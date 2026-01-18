@@ -1,8 +1,11 @@
+import { forwardRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { maintenanceRequests, tenants, properties } from '@/data/mockData';
 import { Wrench, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function RecentActivity() {
+export const RecentActivity = forwardRef<HTMLDivElement>((_, ref) => {
+  const navigate = useNavigate();
   const recentRequests = maintenanceRequests.slice(0, 4);
 
   const getStatusIcon = (status: string) => {
@@ -39,10 +42,10 @@ export function RecentActivity() {
   };
 
   return (
-    <div className="stat-card">
+    <div ref={ref} className="stat-card">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Recent Maintenance Requests</h3>
-        <button className="text-sm text-primary hover:underline">View all</button>
+        <button onClick={() => navigate('/maintenance')} className="text-sm text-primary hover:underline">View all</button>
       </div>
 
       <div className="space-y-4">
@@ -90,4 +93,6 @@ export function RecentActivity() {
       </div>
     </div>
   );
-}
+});
+
+RecentActivity.displayName = 'RecentActivity';
