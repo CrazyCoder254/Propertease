@@ -4,18 +4,39 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { PropertyCard } from '@/components/dashboard/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { properties } from '@/data/mockData';
+import { properties as initialProperties } from '@/data/mockData';
 import { cn } from '@/lib/utils';
+import { PropertyForm } from '@/components/forms/PropertyForm';
+import { toast } from 'sonner';
 
 export default function Properties() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [properties, setProperties] = useState(initialProperties);
 
   const filteredProperties = properties.filter(
     (property) =>
       property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       property.address.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleAddProperty = (data: {
+    name: string;
+    address: string;
+    type: 'apartment' | 'house' | 'condo' | 'commercial';
+    units: number;
+    rentAmount: number;
+    status: 'occupied' | 'vacant' | 'maintenance';
+  }) => {
+    const newProperty = {
+      id: String(properties.length + 1),
+      ...data,
+      landlordId: '1',
+    };
+    setProperties([...properties, newProperty]);
+    toast.success('Property added successfully!');
+  };
 
   return (
     <MainLayout>
@@ -28,7 +49,7 @@ export default function Properties() {
               Manage your {properties.length} properties
             </p>
           </div>
-          <Button className="gradient-primary shadow-glow">
+          <Button className="gradient-primary shadow-glow" onClick={() => setIsFormOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Property
           </Button>
@@ -113,6 +134,12 @@ export default function Properties() {
           </div>
         )}
       </div>
+
+      <PropertyForm
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        onSubmit={handleAddProperty}
+      />
     </MainLayout>
   );
 }

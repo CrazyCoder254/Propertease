@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { Plus, Search, Filter, Wrench, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Search, Wrench, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { maintenanceRequests, tenants, properties } from '@/data/mockData';
+import { maintenanceRequests as initialRequests, tenants, properties } from '@/data/mockData';
 import { cn } from '@/lib/utils';
+import { MaintenanceForm } from '@/components/forms/MaintenanceForm';
+import { toast } from 'sonner';
 
 export default function Maintenance() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [maintenanceRequests, setMaintenanceRequests] = useState(initialRequests);
 
   const filteredRequests = maintenanceRequests.filter((request) => {
     const matchesSearch = request.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -56,6 +60,25 @@ export default function Maintenance() {
     { key: 'completed', label: 'Completed', count: maintenanceRequests.filter((r) => r.status === 'completed').length },
   ];
 
+  const handleAddRequest = (data: {
+    propertyId: string;
+    tenantId: string;
+    title: string;
+    description: string;
+    priority: 'low' | 'medium' | 'high';
+    status: 'pending' | 'in-progress' | 'completed';
+  }) => {
+    const now = new Date().toISOString().split('T')[0];
+    const newRequest = {
+      id: String(maintenanceRequests.length + 1),
+      ...data,
+      createdAt: now,
+      updatedAt: now,
+    };
+    setMaintenanceRequests([...maintenanceRequests, newRequest]);
+    toast.success('Maintenance request created successfully!');
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -67,7 +90,7 @@ export default function Maintenance() {
               Track and manage maintenance requests
             </p>
           </div>
-          <Button className="gradient-primary shadow-glow">
+          <Button className="gradient-primary shadow-glow" onClick={() => setIsFormOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             New Request
           </Button>
@@ -181,6 +204,12 @@ export default function Maintenance() {
           </div>
         )}
       </div>
+
+      <MaintenanceForm
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        onSubmit={handleAddRequest}
+      />
     </MainLayout>
   );
 }
