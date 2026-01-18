@@ -3,14 +3,39 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { rentPayments, tenants, properties, dashboardStats } from '@/data/mockData';
+import { rentPayments as initialPayments, tenants, properties, dashboardStats } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { RentPaymentForm } from '@/components/forms/RentPaymentForm';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Rent() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [payments, setPayments] = useState(initialPayments);
+  const { toast } = useToast();
 
-  const filteredPayments = rentPayments.filter((payment) => {
+  const handleRecordPayment = (data: {
+    tenantId: string;
+    propertyId: string;
+    amount: number;
+    dueDate: string;
+    paidDate?: string;
+    month: string;
+    status: 'paid' | 'pending' | 'overdue';
+  }) => {
+    const newPayment = {
+      id: `payment-${Date.now()}`,
+      ...data,
+    };
+    setPayments([newPayment, ...payments]);
+    toast({
+      title: 'Payment Recorded',
+      description: `Successfully recorded $${data.amount} payment.`,
+    });
+  };
+
+  const filteredPayments = payments.filter((payment) => {
     const tenant = tenants.find((t) => t.id === payment.tenantId);
     return tenant?.name.toLowerCase().includes(searchQuery.toLowerCase()) || false;
   });
@@ -39,7 +64,7 @@ export default function Rent() {
             <h1 className="text-3xl font-bold tracking-tight">Rent Management</h1>
             <p className="text-muted-foreground">Track and manage rent payments</p>
           </div>
-          <Button className="gradient-primary shadow-glow">
+          <Button className="gradient-primary shadow-glow" onClick={() => setIsFormOpen(true)}>
             <DollarSign className="h-4 w-4 mr-2" />
             Record Payment
           </Button>
@@ -163,6 +188,12 @@ export default function Rent() {
             </table>
           </div>
         </div>
+
+        <RentPaymentForm
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          onSubmit={handleRecordPayment}
+        />
       </div>
     </MainLayout>
   );
