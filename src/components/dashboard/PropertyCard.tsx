@@ -1,4 +1,5 @@
-import { Building2, MapPin, Users, DollarSign } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Building2, MapPin, DollarSign } from 'lucide-react';
 import { Property } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,8 @@ interface PropertyCardProps {
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
+  const navigate = useNavigate();
+  
   const statusStyles = {
     occupied: 'status-occupied',
     vacant: 'status-vacant',
@@ -66,7 +69,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
           </div>
         </div>
 
-        <Button className="w-full" variant="outline">
+        <Button className="w-full" variant="outline" onClick={() => navigate('/properties')}>
           View Details
         </Button>
       </div>

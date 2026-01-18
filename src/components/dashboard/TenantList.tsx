@@ -1,9 +1,12 @@
+import { forwardRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { tenants, properties } from '@/data/mockData';
-import { User, Mail, Phone, Home } from 'lucide-react';
+import { User, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
-export function TenantList() {
+export const TenantList = forwardRef<HTMLDivElement>((_, ref) => {
+  const navigate = useNavigate();
   const displayTenants = tenants.slice(0, 4);
 
   const getStatusStyle = (status: string) => {
@@ -18,10 +21,10 @@ export function TenantList() {
   };
 
   return (
-    <div className="stat-card">
+    <div ref={ref} className="stat-card">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold">Recent Tenants</h3>
-        <button className="text-sm text-primary hover:underline">View all</button>
+        <button onClick={() => navigate('/tenants')} className="text-sm text-primary hover:underline">View all</button>
       </div>
 
       <div className="space-y-3">
@@ -63,9 +66,11 @@ export function TenantList() {
         })}
       </div>
 
-      <Button variant="outline" className="w-full mt-4">
+      <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/tenants')}>
         Add New Tenant
       </Button>
     </div>
   );
-}
+});
+
+TenantList.displayName = 'TenantList';
