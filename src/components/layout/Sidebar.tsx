@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Building2,
@@ -14,20 +14,48 @@ import {
   Home,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
-const navItems = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Properties', href: '/properties', icon: Building2 },
-  { name: 'Tenants', href: '/tenants', icon: Users },
-  { name: 'Rent', href: '/rent', icon: DollarSign },
-  { name: 'Maintenance', href: '/maintenance', icon: Wrench },
-  { name: 'Reports', href: '/reports', icon: FileText },
-  { name: 'Settings', href: '/settings', icon: Settings },
+const allNavItems = [
+  { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['admin', 'landlord', 'tenant'] },
+  { name: 'Properties', href: '/properties', icon: Building2, roles: ['admin', 'landlord'] },
+  { name: 'Tenants', href: '/tenants', icon: Users, roles: ['admin', 'landlord'] },
+  { name: 'Rent', href: '/rent', icon: DollarSign, roles: ['admin', 'landlord', 'tenant'] },
+  { name: 'Maintenance', href: '/maintenance', icon: Wrench, roles: ['admin', 'landlord', 'tenant'] },
+  { name: 'Reports', href: '/reports', icon: FileText, roles: ['admin', 'landlord'] },
+  { name: 'Settings', href: '/settings', icon: Settings, roles: ['admin', 'landlord', 'tenant'] },
 ];
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { role, signOut, user } = useAuth();
+
+  // Filter nav items based on user role
+  const navItems = allNavItems.filter(item => 
+    role ? item.roles.includes(role) : false
+  );
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success('Logged out successfully');
+    navigate('/auth');
+  };
+
+  const getRoleBadgeColor = (userRole: string | null) => {
+    switch (userRole) {
+      case 'admin':
+        return 'bg-destructive/20 text-destructive';
+      case 'landlord':
+        return 'bg-primary/20 text-primary';
+      case 'tenant':
+        return 'bg-green-500/20 text-green-600';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
 
   return (
     <aside
@@ -51,6 +79,23 @@ export function Sidebar() {
             )}
           </div>
         </div>
+
+        {/* User Role Badge */}
+        {!collapsed && role && (
+          <div className="px-4 py-3 border-b border-sidebar-border">
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                'px-2 py-1 rounded-full text-xs font-medium capitalize',
+                getRoleBadgeColor(role)
+              )}>
+                {role}
+              </span>
+              <span className="text-xs text-muted-foreground truncate">
+                {user?.email}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Navigation */}
         <nav className="flex-1 space-y-1 px-3 py-4">
@@ -87,7 +132,10 @@ export function Sidebar() {
               </>
             )}
           </button>
-          <button className="sidebar-link w-full text-destructive/80 hover:text-destructive hover:bg-destructive/10">
+          <button 
+            onClick={handleLogout}
+            className="sidebar-link w-full text-destructive/80 hover:text-destructive hover:bg-destructive/10"
+          >
             <LogOut className="h-5 w-5 flex-shrink-0" />
             {!collapsed && <span>Logout</span>}
           </button>
