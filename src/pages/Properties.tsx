@@ -1,25 +1,29 @@
 import { useState } from 'react';
-import { Plus, Search, Filter, Grid3X3, List } from 'lucide-react';
+import { Plus, Search, Filter, Grid3X3, List, Loader2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PropertyCard } from '@/components/dashboard/PropertyCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { properties as initialProperties } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { PropertyForm } from '@/components/forms/PropertyForm';
-import { toast } from 'sonner';
+import { useProperties, PropertyInsert } from '@/hooks/useProperties';
 
 export default function Properties() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [properties, setProperties] = useState(initialProperties);
+  const [statusFilter, setStatusFilter] = useState<string>('All');
 
-  const filteredProperties = properties.filter(
-    (property) =>
+  const { properties, isLoading, addProperty } = useProperties();
+
+  const filteredProperties = properties.filter((property) => {
+    const matchesSearch =
       property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.address.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      property.address.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === 'All' || property.status.toLowerCase() === statusFilter.toLowerCase();
+    return matchesSearch && matchesStatus;
+  });
 
   const handleAddProperty = (data: {
     name: string;
@@ -29,13 +33,16 @@ export default function Properties() {
     rentAmount: number;
     status: 'occupied' | 'vacant' | 'maintenance';
   }) => {
-    const newProperty = {
-      id: String(properties.length + 1),
-      ...data,
-      landlordId: '1',
+    const propertyData: PropertyInsert = {
+      name: data.name,
+      address: data.address,
+      type: data.type,
+      units: data.units,
+      rent_amount: data.rentAmount,
+      status: data.status,
     };
-    setProperties([...properties, newProperty]);
-    toast.success('Property added successfully!');
+    addProperty.mutate(propertyData);
+    setIsFormOpen(false);
   };
 
   return (
@@ -102,9 +109,10 @@ export default function Properties() {
           {['All', 'Occupied', 'Vacant', 'Maintenance'].map((status) => (
             <button
               key={status}
+              onClick={() => setStatusFilter(status)}
               className={cn(
                 'px-4 py-2 rounded-full text-sm font-medium transition-colors',
-                status === 'All'
+                statusFilter === status
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
               )}
@@ -114,14 +122,32 @@ export default function Properties() {
           ))}
         </div>
 
-        {/* Properties Grid */}
-        {filteredProperties.length > 0 ? (
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filteredProperties.length > 0 ? (
           <div className={cn(
             'grid gap-4',
             viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
           )}>
             {filteredProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
+              <PropertyCard 
+                key={property.id} 
+                property={{
+                  id: property.id,
+                  name: property.name,
+                  address: property.address,
+                  type: property.type,
+                  units: property.units,
+                  rentAmount: Number(property.rent_amount),
+                  status: property.status,
+                  landlordId: property.landlord_id,
+                  tenantId: property.tenant_id || undefined,
+                  image: property.image || undefined,
+                }} 
+              />
             ))}
           </div>
         ) : (
@@ -129,7 +155,9 @@ export default function Properties() {
             <div className="text-6xl mb-4">🏠</div>
             <h3 className="text-lg font-semibold">No properties found</h3>
             <p className="text-muted-foreground">
-              Try adjusting your search or add a new property.
+              {properties.length === 0 
+                ? 'Add your first property to get started.' 
+                : 'Try adjusting your search or filter.'}
             </p>
           </div>
         )}
