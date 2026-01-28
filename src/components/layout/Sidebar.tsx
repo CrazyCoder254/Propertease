@@ -11,11 +11,11 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Home,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import logo from '@/assets/logo.png';
 
 const allNavItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard, roles: ['admin', 'landlord', 'tenant'] },
@@ -69,12 +69,17 @@ export function Sidebar() {
         {/* Logo */}
         <div className="flex h-16 items-center justify-between px-4 border-b border-sidebar-border">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl gradient-primary shadow-glow">
-              <Home className="h-5 w-5 text-white" />
-            </div>
+            <img 
+              src={logo} 
+              alt="ProperTease Logo" 
+              className={cn(
+                "object-contain rounded-lg",
+                collapsed ? "h-10 w-10" : "h-12 w-12"
+              )} 
+            />
             {!collapsed && (
               <span className="text-xl font-bold text-sidebar-foreground">
-                Propertease
+                ProperTease
               </span>
             )}
           </div>
