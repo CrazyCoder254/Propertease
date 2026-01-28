@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Home, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import logo from '@/assets/logo.png';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -104,13 +105,18 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl gradient-primary shadow-glow">
-              <Home className="h-6 w-6 text-white" />
-            </div>
+        <CardHeader className="text-center pb-2">
+          <div className="flex flex-col items-center mb-4">
+            <img 
+              src={logo} 
+              alt="ProperTease Logo" 
+              className="h-24 w-24 object-contain rounded-xl shadow-lg mb-3"
+            />
+            <h1 className="text-2xl font-bold text-primary">
+              ProperTease
+            </h1>
           </div>
-          <CardTitle className="text-2xl font-bold">
+          <CardTitle className="text-xl font-semibold">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </CardTitle>
           <CardDescription>
