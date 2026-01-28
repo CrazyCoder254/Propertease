@@ -1,18 +1,22 @@
 import { useState } from 'react';
-import { Plus, Search, Wrench, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Search, Wrench, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { maintenanceRequests as initialRequests, tenants, properties } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { MaintenanceForm } from '@/components/forms/MaintenanceForm';
-import { toast } from 'sonner';
+import { useMaintenance, MaintenanceInsert } from '@/hooks/useMaintenance';
+import { useTenants } from '@/hooks/useTenants';
+import { useProperties } from '@/hooks/useProperties';
 
 export default function Maintenance() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [maintenanceRequests, setMaintenanceRequests] = useState(initialRequests);
+
+  const { maintenanceRequests, isLoading, addRequest } = useMaintenance();
+  const { tenants } = useTenants();
+  const { properties } = useProperties();
 
   const filteredRequests = maintenanceRequests.filter((request) => {
     const matchesSearch = request.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -68,15 +72,16 @@ export default function Maintenance() {
     priority: 'low' | 'medium' | 'high';
     status: 'pending' | 'in-progress' | 'completed';
   }) => {
-    const now = new Date().toISOString().split('T')[0];
-    const newRequest = {
-      id: String(maintenanceRequests.length + 1),
-      ...data,
-      createdAt: now,
-      updatedAt: now,
+    const requestData: MaintenanceInsert = {
+      property_id: data.propertyId,
+      tenant_id: data.tenantId || undefined,
+      title: data.title,
+      description: data.description,
+      priority: data.priority,
+      status: data.status,
     };
-    setMaintenanceRequests([...maintenanceRequests, newRequest]);
-    toast.success('Maintenance request created successfully!');
+    addRequest.mutate(requestData);
+    setIsFormOpen(false);
   };
 
   return (
@@ -135,71 +140,77 @@ export default function Maintenance() {
           </div>
         </div>
 
-        {/* Requests Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredRequests.map((request, index) => {
-            const tenant = tenants.find((t) => t.id === request.tenantId);
-            const property = properties.find((p) => p.id === request.propertyId);
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filteredRequests.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredRequests.map((request, index) => {
+              const tenant = tenants.find((t) => t.id === request.tenant_id);
+              const property = properties.find((p) => p.id === request.property_id);
 
-            return (
-              <div
-                key={request.id}
-                className={cn(
-                  'stat-card border-l-4',
-                  getPriorityStyle(request.priority),
-                  'animate-fade-in'
-                )}
-                style={{
-                  opacity: 0,
-                  animationDelay: `${index * 0.1}s`,
-                  animationFillMode: 'forwards',
-                }}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    {getStatusIcon(request.status)}
-                    <span className={cn('status-badge', getStatusStyle(request.status))}>
-                      {request.status.replace('-', ' ')}
+              return (
+                <div
+                  key={request.id}
+                  className={cn(
+                    'stat-card border-l-4',
+                    getPriorityStyle(request.priority),
+                    'animate-fade-in'
+                  )}
+                  style={{
+                    opacity: 0,
+                    animationDelay: `${index * 0.1}s`,
+                    animationFillMode: 'forwards',
+                  }}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(request.status)}
+                      <span className={cn('status-badge', getStatusStyle(request.status))}>
+                        {request.status.replace('-', ' ')}
+                      </span>
+                    </div>
+                    <span
+                      className={cn(
+                        'text-xs font-medium px-2 py-1 rounded-full border',
+                        getPriorityStyle(request.priority)
+                      )}
+                    >
+                      {request.priority}
                     </span>
                   </div>
-                  <span
-                    className={cn(
-                      'text-xs font-medium px-2 py-1 rounded-full border',
-                      getPriorityStyle(request.priority)
-                    )}
-                  >
-                    {request.priority}
-                  </span>
-                </div>
 
-                <h3 className="font-semibold text-lg mb-2">{request.title}</h3>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {request.description}
-                </p>
-
-                <div className="flex items-center justify-between text-sm text-muted-foreground pt-3 border-t border-border">
-                  <div>
-                    <p className="font-medium text-foreground">{property?.name}</p>
-                    <p>{tenant?.name}</p>
-                  </div>
-                  <p>
-                    {new Date(request.createdAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+                  <h3 className="font-semibold text-lg mb-2">{request.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    {request.description}
                   </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
 
-        {filteredRequests.length === 0 && (
+                  <div className="flex items-center justify-between text-sm text-muted-foreground pt-3 border-t border-border">
+                    <div>
+                      <p className="font-medium text-foreground">{property?.name || 'Unknown Property'}</p>
+                      <p>{tenant?.name || 'Unknown Tenant'}</p>
+                    </div>
+                    <p>
+                      {new Date(request.created_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Wrench className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold">No maintenance requests</h3>
             <p className="text-muted-foreground">
-              No requests match your current filter.
+              {maintenanceRequests.length === 0
+                ? 'Create your first maintenance request.'
+                : 'No requests match your current filter.'}
             </p>
           </div>
         )}

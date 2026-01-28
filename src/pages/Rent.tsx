@@ -1,19 +1,22 @@
-import { DollarSign, TrendingUp, TrendingDown, Calendar, Search } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Calendar, Search, Loader2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { rentPayments as initialPayments, tenants, properties, dashboardStats } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { RentPaymentForm } from '@/components/forms/RentPaymentForm';
-import { useToast } from '@/hooks/use-toast';
+import { useRentPayments, RentPaymentInsert } from '@/hooks/useRentPayments';
+import { useTenants } from '@/hooks/useTenants';
+import { useProperties } from '@/hooks/useProperties';
 
 export default function Rent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [payments, setPayments] = useState(initialPayments);
-  const { toast } = useToast();
+
+  const { rentPayments, isLoading, addPayment, stats } = useRentPayments();
+  const { tenants } = useTenants();
+  const { properties } = useProperties();
 
   const handleRecordPayment = (data: {
     tenantId: string;
@@ -24,19 +27,21 @@ export default function Rent() {
     month: string;
     status: 'paid' | 'pending' | 'overdue';
   }) => {
-    const newPayment = {
-      id: `payment-${Date.now()}`,
-      ...data,
+    const paymentData: RentPaymentInsert = {
+      tenant_id: data.tenantId || undefined,
+      property_id: data.propertyId,
+      amount: data.amount,
+      due_date: data.dueDate,
+      paid_date: data.paidDate,
+      status: data.status,
+      month: data.month,
     };
-    setPayments([newPayment, ...payments]);
-    toast({
-      title: 'Payment Recorded',
-      description: `Successfully recorded $${data.amount} payment.`,
-    });
+    addPayment.mutate(paymentData);
+    setIsFormOpen(false);
   };
 
-  const filteredPayments = payments.filter((payment) => {
-    const tenant = tenants.find((t) => t.id === payment.tenantId);
+  const filteredPayments = rentPayments.filter((payment) => {
+    const tenant = tenants.find((t) => t.id === payment.tenant_id);
     return tenant?.name.toLowerCase().includes(searchQuery.toLowerCase()) || false;
   });
 
@@ -51,9 +56,10 @@ export default function Rent() {
     }
   };
 
-  const totalExpected =
-    dashboardStats.totalRentCollected + dashboardStats.pendingRent + dashboardStats.overdueRent;
-  const collectionRate = Math.round((dashboardStats.totalRentCollected / totalExpected) * 100);
+  const totalExpected = stats.totalCollected + stats.pendingRent + stats.overdueRent;
+  const collectionRate = totalExpected > 0 
+    ? Math.round((stats.totalCollected / totalExpected) * 100) 
+    : 0;
 
   return (
     <MainLayout>
@@ -74,20 +80,20 @@ export default function Rent() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Collected"
-            value={`$${dashboardStats.totalRentCollected.toLocaleString()}`}
+            value={`$${stats.totalCollected.toLocaleString()}`}
             subtitle={`${collectionRate}% collection rate`}
             icon={TrendingUp}
             variant="success"
           />
           <StatCard
             title="Pending"
-            value={`$${dashboardStats.pendingRent.toLocaleString()}`}
+            value={`$${stats.pendingRent.toLocaleString()}`}
             subtitle="Due this month"
             icon={Calendar}
           />
           <StatCard
             title="Overdue"
-            value={`$${dashboardStats.overdueRent.toLocaleString()}`}
+            value={`$${stats.overdueRent.toLocaleString()}`}
             subtitle="Requires attention"
             icon={TrendingDown}
             variant="warning"
@@ -111,83 +117,97 @@ export default function Rent() {
           />
         </div>
 
-        {/* Payments Table */}
-        <div className="stat-card p-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Tenant
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden md:table-cell">
-                    Property
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Amount
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden sm:table-cell">
-                    Due Date
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden lg:table-cell">
-                    Month
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPayments.map((payment, index) => {
-                  const tenant = tenants.find((t) => t.id === payment.tenantId);
-                  const property = properties.find((p) => p.id === payment.propertyId);
-
-                  return (
-                    <tr
-                      key={payment.id}
-                      className={cn(
-                        'border-b border-border last:border-0 hover:bg-muted/30 transition-colors',
-                        'animate-fade-in'
-                      )}
-                      style={{
-                        opacity: 0,
-                        animationDelay: `${index * 0.05}s`,
-                        animationFillMode: 'forwards',
-                      }}
-                    >
-                      <td className="py-4 px-4">
-                        <p className="font-medium">{tenant?.name || 'Unknown'}</p>
-                      </td>
-                      <td className="py-4 px-4 hidden md:table-cell">
-                        <p className="text-sm text-muted-foreground">{property?.name || 'N/A'}</p>
-                      </td>
-                      <td className="py-4 px-4">
-                        <p className="font-semibold">${payment.amount.toLocaleString()}</p>
-                      </td>
-                      <td className="py-4 px-4 hidden sm:table-cell">
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(payment.dueDate).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </p>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={cn('status-badge', getStatusStyle(payment.status))}>
-                          {payment.status}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 hidden lg:table-cell">
-                        <p className="text-sm text-muted-foreground">{payment.month}</p>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        </div>
+        ) : rentPayments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <DollarSign className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold">No rent payments yet</h3>
+            <p className="text-muted-foreground">
+              Record your first payment to get started.
+            </p>
+          </div>
+        ) : (
+          <div className="stat-card p-0 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                      Tenant
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden md:table-cell">
+                      Property
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                      Amount
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden sm:table-cell">
+                      Due Date
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                      Status
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden lg:table-cell">
+                      Month
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredPayments.map((payment, index) => {
+                    const tenant = tenants.find((t) => t.id === payment.tenant_id);
+                    const property = properties.find((p) => p.id === payment.property_id);
+
+                    return (
+                      <tr
+                        key={payment.id}
+                        className={cn(
+                          'border-b border-border last:border-0 hover:bg-muted/30 transition-colors',
+                          'animate-fade-in'
+                        )}
+                        style={{
+                          opacity: 0,
+                          animationDelay: `${index * 0.05}s`,
+                          animationFillMode: 'forwards',
+                        }}
+                      >
+                        <td className="py-4 px-4">
+                          <p className="font-medium">{tenant?.name || 'Unknown'}</p>
+                        </td>
+                        <td className="py-4 px-4 hidden md:table-cell">
+                          <p className="text-sm text-muted-foreground">{property?.name || 'N/A'}</p>
+                        </td>
+                        <td className="py-4 px-4">
+                          <p className="font-semibold">${Number(payment.amount).toLocaleString()}</p>
+                        </td>
+                        <td className="py-4 px-4 hidden sm:table-cell">
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(payment.due_date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </p>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={cn('status-badge', getStatusStyle(payment.status))}>
+                            {payment.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4 hidden lg:table-cell">
+                          <p className="text-sm text-muted-foreground">{payment.month}</p>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         <RentPaymentForm
           open={isFormOpen}

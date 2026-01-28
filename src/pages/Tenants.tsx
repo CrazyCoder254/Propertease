@@ -1,17 +1,19 @@
 import { useState } from 'react';
-import { Plus, Search, User, Mail, Phone, Home, MoreVertical } from 'lucide-react';
+import { Plus, Search, User, Mail, Phone, Home, MoreVertical, Loader2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { tenants as initialTenants, properties } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { TenantForm } from '@/components/forms/TenantForm';
-import { toast } from 'sonner';
+import { useTenants, TenantInsert } from '@/hooks/useTenants';
+import { useProperties } from '@/hooks/useProperties';
 
 export default function Tenants() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [tenants, setTenants] = useState(initialTenants);
+
+  const { tenants, isLoading, addTenant } = useTenants();
+  const { properties } = useProperties();
 
   const filteredTenants = tenants.filter(
     (tenant) =>
@@ -39,12 +41,17 @@ export default function Tenants() {
     leaseEnd: string;
     rentStatus: 'paid' | 'pending' | 'overdue';
   }) => {
-    const newTenant = {
-      id: String(tenants.length + 1),
-      ...data,
+    const tenantData: TenantInsert = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      property_id: data.propertyId,
+      move_in_date: data.moveInDate,
+      lease_end: data.leaseEnd,
+      rent_status: data.rentStatus,
     };
-    setTenants([...tenants, newTenant]);
-    toast.success('Tenant added successfully!');
+    addTenant.mutate(tenantData);
+    setIsFormOpen(false);
   };
 
   return (
@@ -75,108 +82,122 @@ export default function Tenants() {
           />
         </div>
 
-        {/* Tenants Table/Cards */}
-        <div className="stat-card p-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Tenant
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden md:table-cell">
-                    Contact
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden lg:table-cell">
-                    Property
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
-                    Rent Status
-                  </th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden sm:table-cell">
-                    Lease End
-                  </th>
-                  <th className="py-3 px-4"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTenants.map((tenant, index) => {
-                  const property = properties.find((p) => p.id === tenant.propertyId);
-
-                  return (
-                    <tr
-                      key={tenant.id}
-                      className={cn(
-                        'border-b border-border last:border-0 hover:bg-muted/30 transition-colors',
-                        'animate-fade-in'
-                      )}
-                      style={{
-                        opacity: 0,
-                        animationDelay: `${index * 0.05}s`,
-                        animationFillMode: 'forwards',
-                      }}
-                    >
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/10">
-                            <User className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{tenant.name}</p>
-                            <p className="text-sm text-muted-foreground md:hidden">
-                              {tenant.email}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 hidden md:table-cell">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Mail className="h-3.5 w-3.5" />
-                            {tenant.email}
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Phone className="h-3.5 w-3.5" />
-                            {tenant.phone}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 hidden lg:table-cell">
-                        {property ? (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Home className="h-4 w-4 text-muted-foreground" />
-                            {property.name}
-                          </div>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">No property</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={cn('status-badge', getStatusStyle(tenant.rentStatus))}>
-                          {tenant.rentStatus}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 hidden sm:table-cell">
-                        <span className="text-sm text-muted-foreground">
-                          {new Date(tenant.leaseEnd).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                          })}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        </div>
+        ) : tenants.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <User className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold">No tenants yet</h3>
+            <p className="text-muted-foreground">
+              Add your first tenant to get started.
+            </p>
+          </div>
+        ) : (
+          <div className="stat-card p-0 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                      Tenant
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden md:table-cell">
+                      Contact
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden lg:table-cell">
+                      Property
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
+                      Rent Status
+                    </th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground hidden sm:table-cell">
+                      Lease End
+                    </th>
+                    <th className="py-3 px-4"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTenants.map((tenant, index) => {
+                    const property = properties.find((p) => p.id === tenant.property_id);
+
+                    return (
+                      <tr
+                        key={tenant.id}
+                        className={cn(
+                          'border-b border-border last:border-0 hover:bg-muted/30 transition-colors',
+                          'animate-fade-in'
+                        )}
+                        style={{
+                          opacity: 0,
+                          animationDelay: `${index * 0.05}s`,
+                          animationFillMode: 'forwards',
+                        }}
+                      >
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/10">
+                              <User className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{tenant.name}</p>
+                              <p className="text-sm text-muted-foreground md:hidden">
+                                {tenant.email}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 hidden md:table-cell">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Mail className="h-3.5 w-3.5" />
+                              {tenant.email}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Phone className="h-3.5 w-3.5" />
+                              {tenant.phone || 'N/A'}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 hidden lg:table-cell">
+                          {property ? (
+                            <div className="flex items-center gap-2 text-sm">
+                              <Home className="h-4 w-4 text-muted-foreground" />
+                              {property.name}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">No property</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={cn('status-badge', getStatusStyle(tenant.rent_status))}>
+                            {tenant.rent_status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4 hidden sm:table-cell">
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(tenant.lease_end).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       <TenantForm
