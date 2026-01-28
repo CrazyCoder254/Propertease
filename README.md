@@ -1,73 +1,179 @@
-# Welcome to your Lovable project
+🏠 SmartRent Hub (Propertease)
 
-## Project info
+SmartRent Hub, also known as Propertease, is a modern, web-based smart property management system designed to simplify and automate rental property operations. It provides a centralized platform for administrators, landlords, and tenants to manage properties, tenants, rent payments, and maintenance requests efficiently.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+🚀 Features
+🔐 Authentication & User Roles
 
-## How can I edit this code?
+Secure authentication powered by Lovable Cloud
 
-There are several ways of editing your application.
+Role-based access control:
 
-**Use Lovable**
+Administrator – Full system access
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Landlord – Manage properties, tenants, rent, and maintenance
 
-Changes made via Lovable will be committed automatically to this repo.
+Tenant – View rent, submit maintenance requests, manage profile
 
-**Use your preferred IDE**
+Protected routes and role-aware UI
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Login, signup, logout, and profile editing
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+🏢 Property Management
 
-Follow these steps:
+Create, view, and manage rental properties
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Property types (apartment, house, condo, commercial)
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Status tracking (vacant, occupied, under maintenance)
 
-# Step 3: Install the necessary dependencies.
-npm i
+Landlord-to-property ownership enforcement
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+👥 Tenant Management
+
+Add and manage tenants
+
+Assign tenants to properties
+
+Lease period tracking
+
+Rent status indicators (paid, pending, overdue)
+
+💰 Rent Management
+
+Record rent payments
+
+Track payment status per tenant
+
+Monthly rent records
+
+Persistent storage across sessions
+
+🛠 Maintenance Requests
+
+Tenants can submit maintenance requests
+
+Priority levels (low, medium, high)
+
+Status tracking (pending, in-progress, completed)
+
+Landlord and admin oversight
+
+📊 Dashboard & UI
+
+Clean, modern SaaS-inspired interface
+
+Key statistics overview
+
+Role-based sidebar navigation
+
+Fully responsive design
+
+Custom branding with favicon and logo across the app
+
+🧱 Tech Stack
+Frontend
+
+React + TypeScript
+
+Vite
+
+Tailwind CSS
+
+Zod for form validation
+
+Component-based, responsive UI
+
+Backend
+
+Lovable Cloud (Supabase-based)
+
+PostgreSQL database
+
+Row Level Security (RLS)
+
+Role-based database policies
+
+Database
+
+Properties
+
+Tenants
+
+Maintenance Requests
+
+Rent Payments
+
+User Profiles & Roles
+
+🔒 Security
+
+Row Level Security (RLS) on all tables
+
+Users can only access data permitted by their role
+
+Secure authentication and session handling
+
+📁 Project Structure (Simplified)
+src/
+├── components/
+├── hooks/
+│   ├── useProperties.ts
+│   ├── useTenants.ts
+│   ├── useMaintenance.ts
+│   └── useRentPayments.ts
+├── pages/
+│   ├── Dashboard
+│   ├── Properties
+│   ├── Tenants
+│   ├── Rent
+│   ├── Maintenance
+│   └── Settings
+├── auth/
+├── App.tsx
+└── main.tsx
+
+⚙️ Setup & Installation
+# Clone the repository
+git clone https://github.com/your-username/smartrent-hub.git
+
+# Navigate into the project
+cd smartrent-hub
+
+# Install dependencies
+npm install
+
+# Run the development server
 npm run dev
-```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+⚠️ Note: This project requires Lovable Cloud to be enabled for authentication, database access, and persistence.
 
-**Use GitHub Codespaces**
+🧪 Demo Accounts (Optional)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+You can create users with different roles during signup:
 
-## What technologies are used for this project?
+Admin
 
-This project is built with:
+Landlord
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Tenant
 
-## How can I deploy this project?
+Each role will automatically see different features and navigation options.
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+🛣️ Future Enhancements
 
-## Can I connect a custom domain to my Lovable project?
+Notifications & alerts system
 
-Yes, you can!
+File uploads for maintenance requests
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Advanced reporting & analytics
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Online rent payments
+
+Messaging between landlords and tenants
+
+📜 License
+
+This project is for educational and demonstration purposes.
+Feel free to fork and extend.
