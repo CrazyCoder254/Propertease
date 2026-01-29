@@ -80,27 +80,27 @@ export default function Rent() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Collected"
-            value={`$${stats.totalCollected.toLocaleString()}`}
+            value={`KSH ${stats.totalCollected.toLocaleString()}`}
             subtitle={`${collectionRate}% collection rate`}
             icon={TrendingUp}
             variant="success"
           />
           <StatCard
             title="Pending"
-            value={`$${stats.pendingRent.toLocaleString()}`}
+            value={`KSH ${stats.pendingRent.toLocaleString()}`}
             subtitle="Due this month"
             icon={Calendar}
           />
           <StatCard
             title="Overdue"
-            value={`$${stats.overdueRent.toLocaleString()}`}
+            value={`KSH ${stats.overdueRent.toLocaleString()}`}
             subtitle="Requires attention"
             icon={TrendingDown}
             variant="warning"
           />
           <StatCard
             title="Expected Monthly"
-            value={`$${totalExpected.toLocaleString()}`}
+            value={`KSH ${totalExpected.toLocaleString()}`}
             subtitle="From all properties"
             icon={DollarSign}
           />
@@ -181,7 +181,7 @@ export default function Rent() {
                           <p className="text-sm text-muted-foreground">{property?.name || 'N/A'}</p>
                         </td>
                         <td className="py-4 px-4">
-                          <p className="font-semibold">${Number(payment.amount).toLocaleString()}</p>
+                          <p className="font-semibold">KSH {Number(payment.amount).toLocaleString()}</p>
                         </td>
                         <td className="py-4 px-4 hidden sm:table-cell">
                           <p className="text-sm text-muted-foreground">

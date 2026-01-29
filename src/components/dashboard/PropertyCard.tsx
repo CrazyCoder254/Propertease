@@ -64,7 +64,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
             </div>
             <div className="flex items-center gap-1.5 text-sm">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span>${property.rentAmount.toLocaleString()}/mo</span>
+              <span>KSH {property.rentAmount.toLocaleString()}/mo</span>
             </div>
           </div>
         </div>
