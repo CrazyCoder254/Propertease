@@ -69,8 +69,8 @@ export default function Dashboard() {
           />
           <StatCard
             title="Rent Collected"
-            value={`$${dashboardStats.totalRentCollected.toLocaleString()}`}
-            subtitle={totalRent > 0 ? `of $${totalRent.toLocaleString()} total` : 'No payments yet'}
+            value={`KSH ${dashboardStats.totalRentCollected.toLocaleString()}`}
+            subtitle={totalRent > 0 ? `of KSH ${totalRent.toLocaleString()} total` : 'No payments yet'}
             icon={DollarSign}
             variant="success"
           />
@@ -90,7 +90,7 @@ export default function Dashboard() {
             <div>
               <p className="font-medium text-destructive">Overdue Rent Alert</p>
               <p className="text-sm text-destructive/80">
-                ${dashboardStats.overdueRent.toLocaleString()} in overdue rent payments require attention.
+                KSH {dashboardStats.overdueRent.toLocaleString()} in overdue rent payments require attention.
               </p>
             </div>
           </div>
