@@ -204,6 +204,7 @@ export default function Tenants() {
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
         onSubmit={handleAddTenant}
+        properties={properties}
       />
     </MainLayout>
   );

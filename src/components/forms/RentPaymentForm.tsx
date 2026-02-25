@@ -18,7 +18,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { tenants, properties } from '@/data/mockData';
+import { Property } from '@/hooks/useProperties';
+import { Tenant } from '@/hooks/useTenants';
 
 const rentPaymentSchema = z.object({
   tenantId: z.string().min(1, 'Tenant is required'),
@@ -36,9 +37,11 @@ interface RentPaymentFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: RentPaymentFormData) => void;
+  tenants: Tenant[];
+  properties: Property[];
 }
 
-export function RentPaymentForm({ open, onOpenChange, onSubmit }: RentPaymentFormProps) {
+export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, properties }: RentPaymentFormProps) {
   const {
     register,
     handleSubmit,
@@ -54,7 +57,7 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit }: RentPaymentFor
   });
 
   const selectedTenantId = watch('tenantId');
-  const activeTenants = tenants.filter((t) => t.propertyId);
+  const activeTenants = tenants.filter((t) => t.property_id);
 
   const handleFormSubmit = (data: RentPaymentFormData) => {
     onSubmit(data);
@@ -65,11 +68,11 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit }: RentPaymentFor
   const handleTenantChange = (tenantId: string) => {
     setValue('tenantId', tenantId);
     const tenant = tenants.find((t) => t.id === tenantId);
-    if (tenant) {
-      setValue('propertyId', tenant.propertyId);
-      const property = properties.find((p) => p.id === tenant.propertyId);
+    if (tenant && tenant.property_id) {
+      setValue('propertyId', tenant.property_id);
+      const property = properties.find((p) => p.id === tenant.property_id);
       if (property) {
-        setValue('amount', property.rentAmount);
+        setValue('amount', property.rent_amount);
       }
     }
   };
