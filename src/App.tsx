@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Properties from "./pages/Properties";
+import PropertyDetail from "./pages/PropertyDetail";
 import Tenants from "./pages/Tenants";
 import Rent from "./pages/Rent";
 import Maintenance from "./pages/Maintenance";
@@ -34,6 +35,11 @@ const App = () => (
             <Route path="/properties" element={
               <ProtectedRoute allowedRoles={['admin', 'landlord']}>
                 <Properties />
+              </ProtectedRoute>
+            } />
+            <Route path="/properties/:id" element={
+              <ProtectedRoute allowedRoles={['admin', 'landlord']}>
+                <PropertyDetail />
               </ProtectedRoute>
             } />
             <Route path="/tenants" element={
