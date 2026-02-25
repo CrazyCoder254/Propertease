@@ -1,16 +1,26 @@
-import { useNavigate } from 'react-router-dom';
 import { Building2, MapPin, DollarSign } from 'lucide-react';
-import { Property } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
-interface PropertyCardProps {
-  property: Property;
+interface PropertyCardProperty {
+  id: string;
+  name: string;
+  address: string;
+  type: 'apartment' | 'house' | 'condo' | 'commercial';
+  units: number;
+  rentAmount: number;
+  status: 'occupied' | 'vacant' | 'maintenance';
+  landlordId?: string;
+  tenantId?: string;
+  image?: string;
 }
 
-export function PropertyCard({ property }: PropertyCardProps) {
-  const navigate = useNavigate();
-  
+interface PropertyCardProps {
+  property: PropertyCardProperty;
+  onView?: () => void;
+}
+
+export function PropertyCard({ property, onView }: PropertyCardProps) {
   const statusStyles = {
     occupied: 'status-occupied',
     vacant: 'status-vacant',
@@ -32,7 +42,6 @@ export function PropertyCard({ property }: PropertyCardProps) {
 
   return (
     <div className="stat-card group overflow-hidden">
-      {/* Property Image Placeholder */}
       <div className="relative -mx-6 -mt-6 mb-4 h-40 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-6xl opacity-50">{typeIcons[property.type]}</span>
@@ -44,7 +53,6 @@ export function PropertyCard({ property }: PropertyCardProps) {
         </div>
       </div>
 
-      {/* Property Details */}
       <div className="space-y-3">
         <div>
           <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
@@ -69,7 +77,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
           </div>
         </div>
 
-        <Button className="w-full" variant="outline" onClick={() => navigate('/properties')}>
+        <Button className="w-full" variant="outline" onClick={onView}>
           View Details
         </Button>
       </div>
