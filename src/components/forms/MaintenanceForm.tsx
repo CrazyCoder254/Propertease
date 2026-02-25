@@ -26,11 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { properties, tenants } from '@/data/mockData';
+import { Property } from '@/hooks/useProperties';
+import { Tenant } from '@/hooks/useTenants';
 
 const maintenanceSchema = z.object({
   propertyId: z.string().min(1, 'Please select a property'),
-  tenantId: z.string().min(1, 'Please select a tenant'),
+  tenantId: z.string().optional(),
   title: z.string().trim().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
   description: z.string().trim().min(10, 'Description must be at least 10 characters').max(500, 'Description must be less than 500 characters'),
   priority: z.enum(['low', 'medium', 'high'], {
@@ -47,11 +48,11 @@ interface MaintenanceFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: MaintenanceFormValues) => void;
+  properties: Property[];
+  tenants: Tenant[];
 }
 
-export function MaintenanceForm({ open, onOpenChange, onSubmit }: MaintenanceFormProps) {
-  const occupiedProperties = properties.filter((p) => p.status === 'occupied');
-
+export function MaintenanceForm({ open, onOpenChange, onSubmit, properties, tenants }: MaintenanceFormProps) {
   const form = useForm<MaintenanceFormValues>({
     resolver: zodResolver(maintenanceSchema),
     defaultValues: {
@@ -65,7 +66,7 @@ export function MaintenanceForm({ open, onOpenChange, onSubmit }: MaintenanceFor
   });
 
   const selectedPropertyId = form.watch('propertyId');
-  const propertyTenants = tenants.filter((t) => t.propertyId === selectedPropertyId);
+  const propertyTenants = tenants.filter((t) => t.property_id === selectedPropertyId);
 
   const handleSubmit = (data: MaintenanceFormValues) => {
     onSubmit(data);
@@ -103,7 +104,7 @@ export function MaintenanceForm({ open, onOpenChange, onSubmit }: MaintenanceFor
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {occupiedProperties.map((property) => (
+                      {properties.map((property) => (
                         <SelectItem key={property.id} value={property.id}>
                           {property.name}
                         </SelectItem>
@@ -120,7 +121,7 @@ export function MaintenanceForm({ open, onOpenChange, onSubmit }: MaintenanceFor
               name="tenantId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tenant</FormLabel>
+                  <FormLabel>Tenant (Optional)</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}

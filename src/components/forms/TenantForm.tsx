@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { properties } from '@/data/mockData';
+import { Property } from '@/hooks/useProperties';
 
 const tenantSchema = z.object({
   name: z.string().trim().min(1, 'Tenant name is required').max(100, 'Name must be less than 100 characters'),
@@ -53,9 +53,10 @@ interface TenantFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: TenantFormValues) => void;
+  properties: Property[];
 }
 
-export function TenantForm({ open, onOpenChange, onSubmit }: TenantFormProps) {
+export function TenantForm({ open, onOpenChange, onSubmit, properties }: TenantFormProps) {
   const vacantProperties = properties.filter((p) => p.status === 'vacant');
 
   const form = useForm<TenantFormValues>({

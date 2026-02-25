@@ -213,6 +213,8 @@ export default function Rent() {
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
           onSubmit={handleRecordPayment}
+          tenants={tenants}
+          properties={properties}
         />
       </div>
     </MainLayout>

@@ -220,6 +220,8 @@ export default function Maintenance() {
         open={isFormOpen}
         onOpenChange={setIsFormOpen}
         onSubmit={handleAddRequest}
+        properties={properties}
+        tenants={tenants}
       />
     </MainLayout>
   );
