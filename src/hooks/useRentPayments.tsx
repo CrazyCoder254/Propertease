@@ -50,11 +50,12 @@ export function useRentPayments() {
     mutationFn: async (payment: RentPaymentInsert) => {
       if (!user) throw new Error('Not authenticated');
       
+      // If landlord_id is provided (tenant submitting), use it; otherwise use current user id (landlord)
       const { data, error } = await supabase
         .from('rent_payments')
         .insert({
           ...payment,
-          landlord_id: user.id,
+          landlord_id: payment.landlord_id || user.id,
         })
         .select()
         .single();
