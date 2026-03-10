@@ -25,6 +25,7 @@ export interface RentPaymentInsert {
   paid_date?: string;
   status: 'paid' | 'pending' | 'overdue';
   month: string;
+  landlord_id?: string;
 }
 
 export function useRentPayments() {
