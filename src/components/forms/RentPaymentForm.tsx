@@ -103,7 +103,7 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 mt-4">
           <div className="space-y-2">
             <Label>Tenant</Label>
-            <Select onValueChange={handleTenantChange}>
+            <Select onValueChange={handleTenantChange} value={selectedTenantId || ''}>
               <SelectTrigger>
                 <SelectValue placeholder="Select tenant" />
               </SelectTrigger>
