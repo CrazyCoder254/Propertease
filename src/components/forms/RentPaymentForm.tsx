@@ -58,6 +58,7 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
   });
 
   const selectedTenantId = watch('tenantId');
+  const selectedPropertyId = watch('propertyId');
   const activeTenants = tenants.filter((t) => t.property_id);
 
   // Auto-select when there's only one tenant (e.g. tenant portal)
@@ -65,7 +66,16 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
     if (open && activeTenants.length === 1 && !selectedTenantId) {
       handleTenantChange(activeTenants[0].id);
     }
-  }, [open, activeTenants.length]);
+  }, [open, activeTenants.length, selectedTenantId]);
+
+  // Auto-select when there's only one property
+  useEffect(() => {
+    if (open && properties.length === 1 && !selectedPropertyId) {
+      const property = properties[0];
+      setValue('propertyId', property.id);
+      setValue('amount', property.rent_amount);
+    }
+  }, [open, properties.length, selectedPropertyId, setValue]);
 
   const handleFormSubmit = (data: RentPaymentFormData) => {
     onSubmit(data);

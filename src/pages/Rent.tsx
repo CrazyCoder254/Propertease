@@ -22,8 +22,12 @@ export default function Rent() {
 
   const isTenant = role === 'tenant';
 
-  // Find the tenant record for the current user (if tenant role)
-  const currentTenant = isTenant ? tenants.find(t => t.user_id === user?.id) : null;
+  // Resolve tenant from linked user_id first, then profile email fallback
+  const currentTenant = isTenant
+    ? tenants.find((t) => t.user_id === user?.id)
+      ?? tenants.find((t) => t.email.toLowerCase() === (user?.email || '').toLowerCase())
+      ?? (tenants.length === 1 ? tenants[0] : null)
+    : null;
 
   const handleRecordPayment = (data: {
     tenantId: string;
