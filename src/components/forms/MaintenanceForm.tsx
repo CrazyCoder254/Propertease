@@ -51,9 +51,11 @@ export function MaintenanceForm({ open, onOpenChange, onSubmit, properties, tena
     if (open && defaultValues) {
       form.reset({ propertyId: '', tenantId: '', title: '', description: '', priority: 'medium', status: 'pending', ...defaultValues });
     } else if (open && !isEditing) {
-      form.reset({ propertyId: '', tenantId: '', title: '', description: '', priority: 'medium', status: 'pending' });
+      const autoPropertyId = properties.length === 1 ? properties[0].id : '';
+      const autoTenantId = tenants.length === 1 ? tenants[0].id : '';
+      form.reset({ propertyId: autoPropertyId, tenantId: autoTenantId, title: '', description: '', priority: 'medium', status: 'pending' });
     }
-  }, [open, defaultValues, isEditing]);
+  }, [open, defaultValues, isEditing, properties.length, tenants.length]);
 
   const selectedPropertyId = form.watch('propertyId');
   const propertyTenants = tenants.filter((t) => t.property_id === selectedPropertyId);
