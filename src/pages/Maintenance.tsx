@@ -24,7 +24,11 @@ export default function Maintenance() {
   const { properties } = useProperties();
 
   const isTenant = role === 'tenant';
-  const currentTenant = isTenant ? tenants.find(t => t.user_id === user?.id) : null;
+  const currentTenant = isTenant
+    ? tenants.find((t) => t.user_id === user?.id)
+      ?? tenants.find((t) => t.email.toLowerCase() === (user?.email || '').toLowerCase())
+      ?? (tenants.length === 1 ? tenants[0] : null)
+    : null;
 
   // For tenants, filter properties to only their assigned ones
   const formProperties = isTenant && currentTenant
