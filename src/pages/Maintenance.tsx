@@ -8,6 +8,7 @@ import { MaintenanceForm, MaintenanceFormValues } from '@/components/forms/Maint
 import { useMaintenance, MaintenanceRequest, MaintenanceInsert } from '@/hooks/useMaintenance';
 import { useTenants } from '@/hooks/useTenants';
 import { useProperties } from '@/hooks/useProperties';
+import { useAuth } from '@/hooks/useAuth';
 import { DeleteConfirmDialog } from '@/components/shared/DeleteConfirmDialog';
 
 export default function Maintenance() {
@@ -17,9 +18,19 @@ export default function Maintenance() {
   const [editingRequest, setEditingRequest] = useState<MaintenanceRequest | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const { user, role } = useAuth();
   const { maintenanceRequests, isLoading, addRequest, updateRequest, deleteRequest } = useMaintenance();
   const { tenants } = useTenants();
   const { properties } = useProperties();
+
+  const isTenant = role === 'tenant';
+  const currentTenant = isTenant ? tenants.find(t => t.user_id === user?.id) : null;
+
+  // For tenants, filter properties to only their assigned ones
+  const formProperties = isTenant && currentTenant
+    ? properties.filter(p => p.id === currentTenant.property_id)
+    : properties;
+  const formTenants = isTenant && currentTenant ? [currentTenant] : tenants;
 
   const filteredRequests = maintenanceRequests.filter((r) => {
     const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -60,7 +71,8 @@ export default function Maintenance() {
 
   const handleAdd = (data: MaintenanceFormValues) => {
     const requestData: MaintenanceInsert = {
-      property_id: data.propertyId, tenant_id: data.tenantId || undefined,
+      property_id: data.propertyId,
+      tenant_id: isTenant && currentTenant ? currentTenant.id : (data.tenantId || undefined),
       title: data.title, description: data.description, priority: data.priority, status: data.status,
     };
     addRequest.mutate(requestData);
@@ -85,7 +97,9 @@ export default function Maintenance() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Maintenance</h1>
-            <p className="text-muted-foreground">Track and manage maintenance requests</p>
+            <p className="text-muted-foreground">
+              {isTenant ? 'Submit and track your maintenance requests' : 'Track and manage maintenance requests'}
+            </p>
           </div>
           <Button className="gradient-primary shadow-glow" onClick={() => setIsFormOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />New Request
@@ -114,11 +128,17 @@ export default function Maintenance() {
             {filteredRequests.map((request, index) => {
               const tenant = tenants.find((t) => t.id === request.tenant_id);
               const property = properties.find((p) => p.id === request.property_id);
+              const canEdit = !isTenant || (request.requester_id === user?.id && request.status === 'pending');
+              const canDelete = !isTenant || request.requester_id === user?.id;
               return (
                 <div key={request.id} className={cn('stat-card border-l-4 relative group', getPriorityStyle(request.priority), 'animate-fade-in')} style={{ opacity: 0, animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}>
                   <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => setEditingRequest(request)}><Edit className="h-3.5 w-3.5" /></Button>
-                    <Button size="icon" variant="destructive" className="h-7 w-7" onClick={() => setDeletingId(request.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    {canEdit && (
+                      <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => setEditingRequest(request)}><Edit className="h-3.5 w-3.5" /></Button>
+                    )}
+                    {canDelete && (
+                      <Button size="icon" variant="destructive" className="h-7 w-7" onClick={() => setDeletingId(request.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    )}
                   </div>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -149,13 +169,13 @@ export default function Maintenance() {
         )}
       </div>
 
-      <MaintenanceForm open={isFormOpen} onOpenChange={setIsFormOpen} onSubmit={handleAdd} properties={properties} tenants={tenants} />
+      <MaintenanceForm open={isFormOpen} onOpenChange={setIsFormOpen} onSubmit={handleAdd} properties={formProperties} tenants={formTenants} />
       <MaintenanceForm
         open={!!editingRequest}
         onOpenChange={(open) => { if (!open) setEditingRequest(null); }}
         onSubmit={handleEdit}
-        properties={properties}
-        tenants={tenants}
+        properties={formProperties}
+        tenants={formTenants}
         isEditing
         defaultValues={editingRequest ? {
           propertyId: editingRequest.property_id, tenantId: editingRequest.tenant_id || '',
