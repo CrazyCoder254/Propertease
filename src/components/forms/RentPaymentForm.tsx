@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -59,6 +60,13 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
   const selectedTenantId = watch('tenantId');
   const activeTenants = tenants.filter((t) => t.property_id);
 
+  // Auto-select when there's only one tenant (e.g. tenant portal)
+  useEffect(() => {
+    if (open && activeTenants.length === 1 && !selectedTenantId) {
+      handleTenantChange(activeTenants[0].id);
+    }
+  }, [open, activeTenants.length]);
+
   const handleFormSubmit = (data: RentPaymentFormData) => {
     onSubmit(data);
     reset();
@@ -96,7 +104,7 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 mt-4">
           <div className="space-y-2">
             <Label>Tenant</Label>
-            <Select onValueChange={handleTenantChange}>
+            <Select onValueChange={handleTenantChange} value={selectedTenantId || ''}>
               <SelectTrigger>
                 <SelectValue placeholder="Select tenant" />
               </SelectTrigger>
