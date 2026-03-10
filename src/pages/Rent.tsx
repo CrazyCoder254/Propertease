@@ -9,14 +9,21 @@ import { RentPaymentForm } from '@/components/forms/RentPaymentForm';
 import { useRentPayments, RentPaymentInsert } from '@/hooks/useRentPayments';
 import { useTenants } from '@/hooks/useTenants';
 import { useProperties } from '@/hooks/useProperties';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Rent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
 
+  const { user, role } = useAuth();
   const { rentPayments, isLoading, addPayment, stats } = useRentPayments();
   const { tenants } = useTenants();
   const { properties } = useProperties();
+
+  const isTenant = role === 'tenant';
+
+  // Find the tenant record for the current user (if tenant role)
+  const currentTenant = isTenant ? tenants.find(t => t.user_id === user?.id) : null;
 
   const handleRecordPayment = (data: {
     tenantId: string;
@@ -27,6 +34,9 @@ export default function Rent() {
     month: string;
     status: 'paid' | 'pending' | 'overdue';
   }) => {
+    // For tenants, look up the landlord_id from the property
+    const property = properties.find(p => p.id === data.propertyId);
+    
     const paymentData: RentPaymentInsert = {
       tenant_id: data.tenantId || undefined,
       property_id: data.propertyId,
@@ -35,6 +45,7 @@ export default function Rent() {
       paid_date: data.paidDate,
       status: data.status,
       month: data.month,
+      ...(isTenant && property ? { landlord_id: property.landlord_id } : {}),
     };
     addPayment.mutate(paymentData);
     setIsFormOpen(false);
@@ -42,7 +53,8 @@ export default function Rent() {
 
   const filteredPayments = rentPayments.filter((payment) => {
     const tenant = tenants.find((t) => t.id === payment.tenant_id);
-    return tenant?.name.toLowerCase().includes(searchQuery.toLowerCase()) || false;
+    const matchesSearch = !searchQuery || tenant?.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
   });
 
   const getStatusStyle = (status: string) => {
@@ -61,6 +73,12 @@ export default function Rent() {
     ? Math.round((stats.totalCollected / totalExpected) * 100) 
     : 0;
 
+  // For tenants, pre-filter tenants/properties to only their own
+  const formTenants = isTenant && currentTenant ? [currentTenant] : tenants;
+  const formProperties = isTenant && currentTenant
+    ? properties.filter(p => p.id === currentTenant.property_id)
+    : properties;
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -68,7 +86,9 @@ export default function Rent() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Rent Management</h1>
-            <p className="text-muted-foreground">Track and manage rent payments</p>
+            <p className="text-muted-foreground">
+              {isTenant ? 'View and record your rent payments' : 'Track and manage rent payments'}
+            </p>
           </div>
           <Button className="gradient-primary shadow-glow" onClick={() => setIsFormOpen(true)}>
             <DollarSign className="h-4 w-4 mr-2" />
@@ -107,15 +127,17 @@ export default function Rent() {
         </div>
 
         {/* Search */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search by tenant name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        {!isTenant && (
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search by tenant name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        )}
 
         {/* Loading State */}
         {isLoading ? (
@@ -213,8 +235,8 @@ export default function Rent() {
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
           onSubmit={handleRecordPayment}
-          tenants={tenants}
-          properties={properties}
+          tenants={formTenants}
+          properties={formProperties}
         />
       </div>
     </MainLayout>
