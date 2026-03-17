@@ -30,11 +30,13 @@ export default function Maintenance() {
       ?? (tenants.length === 1 ? tenants[0] : null)
     : null;
 
-  // For tenants, filter properties to only their assigned ones
-  const formProperties = isTenant && currentTenant
+  // For tenants, pre-filter to their own data; fallback to all available so selects are never empty
+  const formProperties = isTenant && currentTenant?.property_id
     ? properties.filter(p => p.id === currentTenant.property_id)
     : properties;
-  const formTenants = isTenant && currentTenant ? [currentTenant] : tenants;
+  const formTenants = isTenant
+    ? (currentTenant ? [currentTenant] : tenants)
+    : tenants;
 
   const filteredRequests = maintenanceRequests.filter((r) => {
     const matchesSearch = r.title.toLowerCase().includes(searchQuery.toLowerCase());
