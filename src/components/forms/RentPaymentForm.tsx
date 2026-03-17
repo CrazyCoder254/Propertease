@@ -40,9 +40,11 @@ interface RentPaymentFormProps {
   onSubmit: (data: RentPaymentFormData) => void;
   tenants: Tenant[];
   properties: Property[];
+  currentTenantId?: string;
+  currentPropertyId?: string;
 }
 
-export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, properties }: RentPaymentFormProps) {
+export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, properties, currentTenantId, currentPropertyId }: RentPaymentFormProps) {
   const {
     register,
     handleSubmit,
