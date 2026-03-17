@@ -36,9 +36,11 @@ interface MaintenanceFormProps {
   tenants: Tenant[];
   defaultValues?: Partial<MaintenanceFormValues>;
   isEditing?: boolean;
+  currentTenantId?: string;
+  currentPropertyId?: string;
 }
 
-export function MaintenanceForm({ open, onOpenChange, onSubmit, properties, tenants, defaultValues, isEditing }: MaintenanceFormProps) {
+export function MaintenanceForm({ open, onOpenChange, onSubmit, properties, tenants, defaultValues, isEditing, currentTenantId, currentPropertyId }: MaintenanceFormProps) {
   const form = useForm<MaintenanceFormValues>({
     resolver: zodResolver(maintenanceSchema),
     defaultValues: {
