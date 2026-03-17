@@ -106,7 +106,7 @@ export function MaintenanceForm({ open, onOpenChange, onSubmit, properties, tena
             <FormField control={form.control} name="tenantId" render={({ field }) => (
               <FormItem>
                 <FormLabel>Tenant (Optional)</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || ''} disabled={!selectedPropertyId}>
+                <Select onValueChange={field.onChange} value={field.value || ''} disabled={!selectedPropertyId || !!currentTenantId}>
                   <FormControl><SelectTrigger><SelectValue placeholder={selectedPropertyId ? "Select a tenant" : "Select a property first"} /></SelectTrigger></FormControl>
                   <SelectContent>
                     {propertyTenants.length > 0 ? propertyTenants.map((t) => (

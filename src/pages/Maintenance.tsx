@@ -175,7 +175,7 @@ export default function Maintenance() {
         )}
       </div>
 
-      <MaintenanceForm open={isFormOpen} onOpenChange={setIsFormOpen} onSubmit={handleAdd} properties={formProperties} tenants={formTenants} />
+      <MaintenanceForm open={isFormOpen} onOpenChange={setIsFormOpen} onSubmit={handleAdd} properties={formProperties} tenants={formTenants} currentTenantId={isTenant ? currentTenant?.id : undefined} currentPropertyId={isTenant ? currentTenant?.property_id ?? undefined : undefined} />
       <MaintenanceForm
         open={!!editingRequest}
         onOpenChange={(open) => { if (!open) setEditingRequest(null); }}
