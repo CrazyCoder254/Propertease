@@ -126,7 +126,7 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 mt-4">
           <div className="space-y-2">
             <Label>Tenant</Label>
-            <Select onValueChange={handleTenantChange} value={selectedTenantId || ''}>
+            <Select onValueChange={handleTenantChange} value={selectedTenantId || ''} disabled={!!currentTenantId}>
               <SelectTrigger>
                 <SelectValue placeholder="Select tenant" />
               </SelectTrigger>
@@ -148,7 +148,7 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
             <Select
               value={watch('propertyId')}
               onValueChange={(value) => setValue('propertyId', value)}
-              disabled={!!selectedTenantId}
+              disabled={!!selectedTenantId || !!currentPropertyId}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Auto-selected from tenant" />
