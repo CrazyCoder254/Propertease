@@ -94,7 +94,7 @@ export function MaintenanceForm({ open, onOpenChange, onSubmit, properties, tena
             <FormField control={form.control} name="propertyId" render={({ field }) => (
               <FormItem>
                 <FormLabel>Property</FormLabel>
-                <Select onValueChange={(v) => { field.onChange(v); form.setValue('tenantId', ''); }} value={field.value}>
+                <Select onValueChange={(v) => { field.onChange(v); form.setValue('tenantId', currentTenantId ?? ''); }} value={field.value} disabled={!!currentPropertyId}>
                   <FormControl><SelectTrigger><SelectValue placeholder="Select a property" /></SelectTrigger></FormControl>
                   <SelectContent>
                     {properties.map((p) => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
