@@ -63,29 +63,31 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
   const selectedPropertyId = watch('propertyId');
   const activeTenants = tenants.filter((t) => t.property_id);
 
-  // Auto-select tenant and property when dialog opens
   useEffect(() => {
     if (!open) return;
-    
-    const available = activeTenants.length > 0 ? activeTenants : tenants;
-    
-    // Auto-select tenant if only one available
-    if (available.length === 1 && !selectedTenantId) {
-      const t = available[0];
-      setValue('tenantId', t.id, { shouldValidate: true });
-      if (t.property_id) {
-        setValue('propertyId', t.property_id, { shouldValidate: true });
-        const prop = properties.find(p => p.id === t.property_id);
-        if (prop) setValue('amount', prop.rent_amount);
+
+    const resolvedTenant = currentTenantId
+      ? tenants.find((tenant) => tenant.id === currentTenantId)
+      : undefined;
+    const resolvedProperty = currentPropertyId
+      ? properties.find((property) => property.id === currentPropertyId)
+      : undefined;
+    const fallbackTenant = resolvedTenant ?? (activeTenants.length === 1 ? activeTenants[0] : undefined);
+    const fallbackProperty = resolvedProperty ?? (properties.length === 1 ? properties[0] : undefined);
+
+    if (fallbackTenant && selectedTenantId !== fallbackTenant.id) {
+      setValue('tenantId', fallbackTenant.id, { shouldValidate: true });
+    }
+
+    const tenantPropertyId = fallbackTenant?.property_id ?? fallbackProperty?.id;
+    if (tenantPropertyId && selectedPropertyId !== tenantPropertyId) {
+      setValue('propertyId', tenantPropertyId, { shouldValidate: true });
+      const property = properties.find((item) => item.id === tenantPropertyId);
+      if (property) {
+        setValue('amount', property.rent_amount);
       }
     }
-    
-    // Auto-select property if only one available and not yet set
-    if (properties.length === 1 && !selectedPropertyId) {
-      setValue('propertyId', properties[0].id, { shouldValidate: true });
-      setValue('amount', properties[0].rent_amount);
-    }
-  }, [open, activeTenants.length, tenants.length, properties.length]);
+  }, [open, currentTenantId, currentPropertyId, tenants, properties, activeTenants, selectedTenantId, selectedPropertyId, setValue]);
 
   const handleFormSubmit = (data: RentPaymentFormData) => {
     onSubmit(data);
