@@ -243,6 +243,8 @@ export default function Rent() {
           onSubmit={handleRecordPayment}
           tenants={formTenants}
           properties={formProperties}
+          currentTenantId={isTenant ? currentTenant?.id : undefined}
+          currentPropertyId={isTenant ? currentTenant?.property_id ?? undefined : undefined}
         />
       </div>
     </MainLayout>
