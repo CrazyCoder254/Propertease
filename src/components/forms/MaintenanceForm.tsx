@@ -51,14 +51,27 @@ export function MaintenanceForm({ open, onOpenChange, onSubmit, properties, tena
 
   useEffect(() => {
     if (!open) return;
+
     if (defaultValues) {
       form.reset({ propertyId: '', tenantId: '', title: '', description: '', priority: 'medium', status: 'pending', ...defaultValues });
-    } else if (!isEditing) {
-      const autoPropertyId = properties.length >= 1 ? properties[0].id : '';
-      const autoTenantId = tenants.length >= 1 ? tenants[0].id : '';
-      form.reset({ propertyId: autoPropertyId, tenantId: autoTenantId, title: '', description: '', priority: 'medium', status: 'pending' });
+      return;
     }
-  }, [open, defaultValues, isEditing, properties.length, tenants.length]);
+
+    if (!isEditing) {
+      const resolvedTenant = currentTenantId ? tenants.find((tenant) => tenant.id === currentTenantId) : undefined;
+      const autoPropertyId = currentPropertyId ?? resolvedTenant?.property_id ?? (properties.length === 1 ? properties[0].id : '');
+      const autoTenantId = currentTenantId ?? (tenants.length === 1 ? tenants[0].id : '');
+
+      form.reset({
+        propertyId: autoPropertyId,
+        tenantId: autoTenantId,
+        title: '',
+        description: '',
+        priority: 'medium',
+        status: 'pending',
+      });
+    }
+  }, [open, defaultValues, isEditing, properties, tenants, currentTenantId, currentPropertyId, form]);
 
   const selectedPropertyId = form.watch('propertyId');
   const propertyTenants = tenants.filter((t) => t.property_id === selectedPropertyId);
