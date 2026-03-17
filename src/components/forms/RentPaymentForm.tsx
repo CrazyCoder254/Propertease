@@ -61,21 +61,29 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
   const selectedPropertyId = watch('propertyId');
   const activeTenants = tenants.filter((t) => t.property_id);
 
-  // Auto-select when there's only one tenant (e.g. tenant portal)
+  // Auto-select tenant and property when dialog opens
   useEffect(() => {
-    if (open && activeTenants.length === 1 && !selectedTenantId) {
-      handleTenantChange(activeTenants[0].id);
+    if (!open) return;
+    
+    const available = activeTenants.length > 0 ? activeTenants : tenants;
+    
+    // Auto-select tenant if only one available
+    if (available.length === 1 && !selectedTenantId) {
+      const t = available[0];
+      setValue('tenantId', t.id, { shouldValidate: true });
+      if (t.property_id) {
+        setValue('propertyId', t.property_id, { shouldValidate: true });
+        const prop = properties.find(p => p.id === t.property_id);
+        if (prop) setValue('amount', prop.rent_amount);
+      }
     }
-  }, [open, activeTenants.length, selectedTenantId]);
-
-  // Auto-select when there's only one property
-  useEffect(() => {
-    if (open && properties.length === 1 && !selectedPropertyId) {
-      const property = properties[0];
-      setValue('propertyId', property.id);
-      setValue('amount', property.rent_amount);
+    
+    // Auto-select property if only one available and not yet set
+    if (properties.length === 1 && !selectedPropertyId) {
+      setValue('propertyId', properties[0].id, { shouldValidate: true });
+      setValue('amount', properties[0].rent_amount);
     }
-  }, [open, properties.length, selectedPropertyId, setValue]);
+  }, [open, activeTenants.length, tenants.length, properties.length]);
 
   const handleFormSubmit = (data: RentPaymentFormData) => {
     onSubmit(data);

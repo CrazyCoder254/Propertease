@@ -77,9 +77,11 @@ export default function Rent() {
     ? Math.round((stats.totalCollected / totalExpected) * 100) 
     : 0;
 
-  // For tenants, pre-filter tenants/properties to only their own
-  const formTenants = isTenant && currentTenant ? [currentTenant] : tenants;
-  const formProperties = isTenant && currentTenant
+  // For tenants, pre-filter to their own data; fallback to all available data so selects are never empty
+  const formTenants = isTenant
+    ? (currentTenant ? [currentTenant] : tenants)
+    : tenants;
+  const formProperties = isTenant && currentTenant?.property_id
     ? properties.filter(p => p.id === currentTenant.property_id)
     : properties;
 
