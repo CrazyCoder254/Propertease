@@ -40,7 +40,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   // Handle responsive sidebar
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
+      if (window.innerWidth < 768) {
         setSidebarOpen(false);
       } else {
         setSidebarOpen(true);
@@ -55,13 +55,13 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar - Desktop */}
-      <div className="hidden lg:block">
+      <div className="hidden md:block">
         <Sidebar />
       </div>
 
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50 md:hidden">
           <div 
             className="fixed inset-0 bg-black/50" 
             onClick={() => setMobileMenuOpen(false)} 
@@ -79,7 +79,7 @@ export function MainLayout({ children }: MainLayoutProps) {
       )}
 
       {/* Main Content */}
-      <div className={cn('transition-all duration-300', sidebarOpen ? 'lg:ml-64' : 'lg:ml-20')}>
+      <div className={cn('transition-all duration-300', sidebarOpen ? 'md:ml-64' : 'md:ml-20')}>
         {/* Top Header */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 backdrop-blur-sm px-4 lg:px-6">
           <div className="flex items-center gap-4">
@@ -87,7 +87,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="md:hidden"
               onClick={() => setMobileMenuOpen(true)}
             >
               <Menu className="h-5 w-5" />
