@@ -1,4 +1,4 @@
-import { Building2, MapPin, DollarSign } from 'lucide-react';
+import { Building2, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
