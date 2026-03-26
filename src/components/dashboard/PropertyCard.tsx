@@ -1,4 +1,4 @@
-import { Building2, MapPin, DollarSign } from 'lucide-react';
+import { Building2, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -71,8 +71,8 @@ export function PropertyCard({ property, onView }: PropertyCardProps) {
               <span>{property.units} {property.units === 1 ? 'unit' : 'units'}</span>
             </div>
             <div className="flex items-center gap-1.5 text-sm">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span>KSH {property.rentAmount.toLocaleString()}/mo</span>
+              <span className="h-4 w-4 text-muted-foreground text-xs font-semibold">KSH</span>
+              <span>{property.rentAmount.toLocaleString()}/mo</span>
             </div>
           </div>
         </div>

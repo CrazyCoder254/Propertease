@@ -111,6 +111,7 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
     'January 2025', 'February 2025', 'March 2025', 'April 2025',
     'May 2025', 'June 2025', 'July 2025', 'August 2025',
     'September 2025', 'October 2025', 'November 2025', 'December 2025',
+    'January 2026', 'February 2026', 'March 2026',
   ];
 
   return (
@@ -168,7 +169,7 @@ export function RentPaymentForm({ open, onOpenChange, onSubmit, tenants, propert
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount ($)</Label>
+              <Label htmlFor="amount">Amount (KSH)</Label>
               <Input
                 id="amount"
                 type="number"
